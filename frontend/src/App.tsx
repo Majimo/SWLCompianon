@@ -6,12 +6,22 @@ function App() {
   const [pageTitle, setPageTitle] = useState('Loading...');
   
   const [units, setUnits] = useState<number[]>([]);
+
   useEffect(() => {
-    setTimeout(() => {
-      console.log('Page chargée');
-      setPageTitle('StarWars Legion Companion');
-      setUnits([1, 2, 3]);
-    }, 1000);
+    fetch('http://localhost:8000/api/units')
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Network response error');
+        }
+        return response.json()
+      })
+      .then((data) => {
+        setUnits(data);
+        setPageTitle('StarWars Legion Companion');
+      })
+      .catch((error) => {
+        console.error('Error fetching units:', error);
+      });
   }, []);
   
   return (
