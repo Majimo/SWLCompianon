@@ -2,25 +2,33 @@ import { useEffect, useState } from 'react'
 import './App.css'
 import Unit, { type UnitProps } from './components/unit/Unit';
 import Button from './components/shared/button/Button';
+import api from './interceptors/api';
 
 function App() {
   const [pageTitle, setPageTitle] = useState('Loading...');
   const [units, setUnits] = useState<UnitProps[]>([]);
 
   useEffect(() => {
-    fetch('http://localhost:8000/api/units')
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error('Network response error');
-        }
-        return response.json()
+    const params = new URLSearchParams();
+    params.append('username', 'pierre');
+    params.append('password', 'secret');
+
+    api.post('/token', params, {
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
       })
-      .then((data) => {
+      .then(response => {
+        sessionStorage.setItem('accessToken', response.data.access_token);
+        return api.get('/api/units');
+      })
+      .then(response => {
+        return response.data;
+      })
+      .then(data => {
         setUnits(data);
         setPageTitle('StarWars Legion Companion');
       })
-      .catch((error) => {
-        console.error('Error fetching units:', error);
+      .catch(error => {
+        console.error('Error during initial data load:', error);
       });
   }, []);
   
@@ -42,18 +50,12 @@ function App() {
   );
 
   function createUnit(newUnit: UnitProps) {
-    fetch('http://localhost:8000/api/units', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-    },
-      body: JSON.stringify(newUnit),
-    })
+    api.post('/api/units', newUnit)
       .then((response) => {
-        if (!response.ok) {
+        if (!response.status || response.status !== 200) {
           throw new Error('Network response error');
         }
-        return response.json();
+        return response.data;
       })
       .then((data) => {
         setUnits((prevUnits) => [...prevUnits, data]);
