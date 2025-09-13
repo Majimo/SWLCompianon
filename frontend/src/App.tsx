@@ -1,36 +1,38 @@
-import { useEffect, useState } from 'react'
-import './App.css'
+import { useEffect, useState } from 'react';
+import './App.css';
 import Unit, { type UnitProps } from './components/unit/Unit';
 import Button from './components/shared/button/Button';
-import api from './interceptors/api';
+import { login } from './services/authService';
+import { getUnits, createUnit as createUnitService } from './services/unitService';
 
 function App() {
   const [pageTitle, setPageTitle] = useState('Loading...');
   const [units, setUnits] = useState<UnitProps[]>([]);
 
   useEffect(() => {
-    const params = new URLSearchParams();
-    params.append('username', 'pierre');
-    params.append('password', 'secret');
-
-    api.post('/token', params, {
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-      })
-      .then(response => {
-        sessionStorage.setItem('accessToken', response.data.access_token);
-        return api.get('/api/units');
-      })
-      .then(response => {
-        return response.data;
-      })
-      .then(data => {
-        setUnits(data);
+    const loadInitialData = async () => {
+      try {
+        await login('pierre', 'secret');
+        const fetchedUnits = await getUnits();
+        setUnits(fetchedUnits);
         setPageTitle('StarWars Legion Companion');
-      })
-      .catch(error => {
+      } catch (error) {
         console.error('Error during initial data load:', error);
-      });
+      }
+    };
+
+    loadInitialData();
   }, []);
+
+  const handleCreateUnit = async () => {
+    try {
+      const newUnitData = { id: units.length + 1, name: `Unit ${units.length + 1}`, points: (units.length + 1) * 100 };
+      const createdUnit = await createUnitService(newUnitData);
+      setUnits((prevUnits) => [...prevUnits, createdUnit]);
+    } catch (error) {
+      console.error('Error creating unit:', error);
+    }
+  };
   
   return (
     <>
@@ -42,28 +44,12 @@ function App() {
         ))}
       </div>
       <div>
-        <Button onClick={() => createUnit({ id: units.length + 1, name: `Unit ${units.length + 1}`, points: (units.length + 1) * 100 })}>
+        <Button onClick={handleCreateUnit}>
           Ajouter une nouvelle unité
         </Button>
       </div>
     </>
   );
-
-  function createUnit(newUnit: UnitProps) {
-    api.post('/api/units', newUnit)
-      .then((response) => {
-        if (!response.status || response.status !== 200) {
-          throw new Error('Network response error');
-        }
-        return response.data;
-      })
-      .then((data) => {
-        setUnits((prevUnits) => [...prevUnits, data]);
-      })
-      .catch((error) => {
-        console.error('Error creating unit:', error);
-      });
-  }
 }
 
 export default App;
