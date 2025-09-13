@@ -4,19 +4,17 @@ import os
 import pytest
 from main import app, units
 
-# Ajout du répertoire racine du projet au sys.path pour résoudre les imports
+# Ajout du répertoire racine du projet au sys.path pour résoudre les imports (Ca marchait pas sinon)
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 client = TestClient(app)
 
 @pytest.fixture(autouse=True)
 def run_before_and_after_tests():
-    """Fixture to execute asserts before and after a test is run"""
-    # Setup: fill with any logic you want
+    """Fixture de réinitialisation avant et après chaque test."""
     
-    yield # this is where the testing happens
-
-    # Teardown : fill with any logic you want
+    yield 
+    
     # On remet la liste des unités à son état initial après chaque test
     units.clear()
     units.extend([

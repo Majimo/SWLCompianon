@@ -1,0 +1,24 @@
+version: "3.9"
+
+services:
+  frontend:
+    image: swlfrontend
+    build:
+      context: .
+      target: final-frontend
+    ports:
+      - "80:80"
+    restart: unless-stopped
+
+  backend:
+    image: swlbackend
+    build:
+      context: .
+      target: final-backend
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+    # environment:
+      # Je me le garde la pour plus tard si je rajoute une BDD
+    depends_on:
+      - frontend
