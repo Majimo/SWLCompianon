@@ -1,5 +1,13 @@
 from pydantic import BaseModel
 
+class Unit(BaseModel):
+    id: int
+    name: str
+    points: int
+
+    def __repr__(self):
+        return f"Unit(id={self.id}, name='{self.name}', points={self.points})"
+
 
 class User(BaseModel):
     username: str
@@ -10,8 +18,3 @@ class User(BaseModel):
 
 class UserInDB(User):
     hashed_password: str
-
-def get_user(db, username: str):
-    if username in db:
-        user_dict = db[username]
-        return UserInDB(**user_dict)
