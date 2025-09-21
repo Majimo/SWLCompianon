@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useUnitStore } from '../store/unitStore';
 import { getUnits, createUnit as createUnitService } from '../services/unitService';
-import { login } from '../services/authService';
 
 export const useUnits = () => {
   const { units, setUnits, addUnit } = useUnitStore();
@@ -13,7 +12,6 @@ export const useUnits = () => {
     setIsLoading(true);
     setError(null);
     try {
-      await login('pierre', 'secret'); // TODO: A remplacer un de ces jours par un vrai login
       const fetchedUnits = await getUnits();
       setUnits(fetchedUnits);
     } catch (err) {
