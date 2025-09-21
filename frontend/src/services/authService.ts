@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import api from "../interceptors/api";
 
 export const login = async (username: string, password: string) => {
@@ -15,3 +16,23 @@ export const login = async (username: string, password: string) => {
 
   return response.data;
 };
+
+export const useAuth = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const token = sessionStorage.getItem("accessToken");
+        if (!token) throw new Error("No token");
+        setIsAuthenticated(true);
+      } catch (error) {
+        console.error("Authentication check failed:", error);
+        setIsAuthenticated(false);
+      }
+    };
+    checkAuth();
+  }, []);
+
+  return isAuthenticated;
+}

@@ -1,39 +1,38 @@
-import './App.css';
-import Unit from './components/unit/Unit';
-import Button from './components/shared/button/Button';
-import { useUnits } from './hooks/useUnits';
+import { createBrowserRouter, RouterProvider, Navigate, Outlet } from 'react-router-dom';
+import LoginPage from './pages/LoginPage';
+import UnitsPage from './pages/UnitsPage';
+import { useAuth } from './services/authService';
+
+const PrivateRoutes = () => {
+  const auth = useAuth();
+  if (auth === null) return <div>Chargement...</div>;
+  return auth ? <Outlet /> : <Navigate to="/login" />;
+};
+
+const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <Navigate to="/units" replace />,
+  },
+  {
+    path: '/login',
+    element: <LoginPage />,
+  },
+  // Routes protégées
+  {
+    element: <PrivateRoutes />,
+    children: [
+      {
+        path: '/units',
+        element: <UnitsPage />,
+      },
+      // (...)
+    ],
+  },
+]);
 
 function App() {
-  const { units, isLoading, error, createUnit } = useUnits();
-
-  const pageTitle = 'StarWars Legion Companion';
-
-  return (
-    <>
-      <h1>{pageTitle}</h1>
-
-      {isLoading && <p>Loading...</p>}
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-
-      {!isLoading && !error && (
-        <>
-          <h2>{units.length > 0 ? 'Liste des unités' : 'Aucune unité disponible'}</h2>
-          <div>
-            {units.map((unit) => (
-              <Unit key={unit.id} id={unit.id} name={unit.name} points={unit.points} />
-            ))}
-          </div>
-          <div>
-            <Button onClick={createUnit}>
-              Ajouter une nouvelle unité
-            </Button>
-          </div>
-        </>
-      )}
-    </>
-  );
+  return <RouterProvider router={router} />;
 }
 
 export default App;
-
-
